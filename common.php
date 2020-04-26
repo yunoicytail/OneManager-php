@@ -1651,12 +1651,14 @@ function render_list($path = '', $files = '')
             while (strpos($html, '<!--FileDownUrl-->')) $html = str_replace('<!--FileDownUrl-->', $files[$_SERVER['DownurlStrName']], $html);
             while (strpos($html, '<!--FileName-->')) $html = str_replace('<!--FileName-->', $files['name'], $html);
             $html = str_replace('<!--FileEncodeDownUrl-->', urlencode($files[$_SERVER['DownurlStrName']]), $html);
+            $html = str_replace('<!--constStr@ClicktoEdit-->', getconstStr('ClicktoEdit'), $html);
+            $html = str_replace('<!--constStr@CancelEdit-->', getconstStr('CancelEdit'), $html);
+            $html = str_replace('<!--constStr@Save-->', getconstStr('Save'), $html);
             $html = str_replace('<!--TxtContent-->', htmlspecialchars(curl_request($files[$_SERVER['DownurlStrName']])['body']), $html);
             $html = str_replace('<!--constStr@FileNotSupport-->', getconstStr('FileNotSupport'), $html);
 
 
-            $html = str_replace('<!--constStr@File-->', getconstStr('File'), $html);
-            //<!--FileDownUrl--><!--FileEncodeDownUrl-->TxtContent
+            //$html = str_replace('<!--constStr@File-->', getconstStr('File'), $html);
         }
 
         $html = str_replace('<!--constStr@language-->', $constStr['language'], $html);
