@@ -1322,8 +1322,8 @@ function render_list($path = '', $files = '')
                 $p_path = $tmp[1];
             }
         } else {
-            if (substr($path,0,1)=='/') $pretitle = substr($path,1);
-            if (substr($path,-1)=='/') $pretitle = substr($path,0,-1);
+            if (substr($path, 0, 1)=='/') $pretitle = substr($path, 1);
+            if (substr($path, -1)=='/') $pretitle = substr($pretitle, 0, -1);
             $tmp=splitlast($pretitle,'/');
             if ($tmp[1]=='') {
                 $n_path = $tmp[0];
