@@ -119,7 +119,7 @@ function install()
     if ($_GET['install2']) {
         if ($_POST['admin']!='') {
             $tmp['admin'] = $_POST['admin'];
-            $tmp['language'] = $_COOKIE['language'];
+            //$tmp['language'] = $_COOKIE['language'];
             $tmp['timezone'] = $_COOKIE['timezone'];
             $response = setConfig($tmp);
             if (api_error($response)) {
