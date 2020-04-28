@@ -1684,7 +1684,7 @@ function render_list($path = '', $files = '')
 
         while (strpos($html, '<!--base_disk_path-->')) $html = str_replace('<!--base_disk_path-->', $_SERVER['base_disk_path'], $html);
         while (strpos($html, '<!--base_path-->')) $html = str_replace('<!--base_path-->', $_SERVER['base_path'], $html);
-        while (strpos($html, '<!--Path-->')) $html = str_replace('<!--Path-->', $path, $html);
+        while (strpos($html, '<!--Path-->')) $html = str_replace('<!--Path-->', str_replace('%23', '#', str_replace('&','&amp;', $path)), $html);
         $html = str_replace('<!--timezone-->', $_SERVER['timezone'], $html);
         
         $html = str_replace('<!--customCss-->', getConfig('customCss'), $html);
