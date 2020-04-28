@@ -443,8 +443,8 @@
         var path = e.innerText;
         if (path.substr(path.length-1)=='/') path = path.substr(0, path.length-1);
         var paths = path.split('/');
+        e.innerHTML = '<a href="' + root + '"><!--constStr@Home--></a> > ';
         if (paths <= 2) return;
-        e.innerHTML = '';
         for (var i = 1; i < paths.length - 1; i++) {
             var to = path_format(root + paths.slice(0, i + 1).join('/'));
             e.innerHTML += '<a href="' + to + '">' + paths[i] + '</a> > '
