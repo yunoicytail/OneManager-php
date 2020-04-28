@@ -86,7 +86,7 @@
             <li><a href="?RefreshCache"><ion-icon name="refresh"></ion-icon><!--constStr@RefreshCache--></a></li>
 <!--IsFolderEnd-->
             <li><a href="<!--IsPreview?-->setup"><ion-icon name="settings"></ion-icon><!--constStr@Setup--></a></li>
-            <li><a onclick="logout()"><ion-icon name="log-out"></ion-icon><!--constStr@Logout--></a></li>
+            <li><a onclick="logout();"><ion-icon name="log-out"></ion-icon><!--constStr@Logout--></a></li>
         </ul></li>
 <!--AdminEnd-->
         &nbsp;
@@ -255,7 +255,7 @@
 <!--FileListStart-->
                     <tr data-to id="tr<!--filenum-->">
                         <td class="file">
-                        <!--AdminStart-->
+<!--AdminStart-->
                             <li class="operate"><ion-icon name="construct"></ion-icon><a><!--constStr@Operate--></a>
                             <ul>
                                 <li><a onclick="showdiv(event, 'rename',<!--filenum-->);"><ion-icon name="create"></ion-icon><!--constStr@Rename--></a></li>
@@ -436,7 +436,7 @@
         </div>
 	</div>
 <!--LoginEnd-->
-<div style="color: rgba(247,247,249,0);"><!--FootStr--></div>
+    <div style="color: rgba(247,247,249,0);"><!--FootStr--></div>
 </body>
 
 <!--ListStart-->
@@ -463,6 +463,7 @@
     }
     document.querySelectorAll('.table-header').forEach(function (e) {
         var path = e.innerText;
+        if (path.substr(path.length-1)=='/') path = path.substr(0, path.length-1);
         var paths = path.split('/');
         if (paths <= 2) return;
         e.innerHTML = '/ ';
