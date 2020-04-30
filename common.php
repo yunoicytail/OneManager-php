@@ -1582,7 +1582,7 @@ function render_list($path = '', $files = '')
                         $FolderListStr = str_replace('<!--lastModifiedDateTime-->', time_format($file['lastModifiedDateTime']), $FolderListStr);
                         $FolderListStr = str_replace('<!--size-->', size_format($file['size']), $FolderListStr);
                         foreach ($IconValues as $key1 => $value1) {
-                            if (in_array($ext, $exts[$key1])) {
+                            if (isset($exts[$key1])&&in_array($ext, $exts[$key1])) {
                                 $FolderListStr = str_replace('<!--IconValue-->', $value1, $FolderListStr);
                             }
                             if ($ext==$key1) {
