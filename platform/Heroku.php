@@ -15,6 +15,24 @@ function getpath()
 
 function getGET()
 {
+    //error_log('POST：' . json_encode($_POST));
+    if (!$_POST) {
+        if (!!$HTTP_RAW_POST_DATA) {
+            $tmpdata = $HTTP_RAW_POST_DATA;
+            //error_log('RAW：' . $tmpdata);
+        } else {
+            $tmpdata = file_get_contents('php://input');
+            //error_log('PHPINPUT：' . $tmpdata);
+        }
+        if (!!$tmpdata) {
+            $postbody = explode("&", $tmpdata);
+            foreach ($postbody as $postvalues) {
+                $pos = strpos($postvalues,"=");
+                $_POST[urldecode(substr($postvalues,0,$pos))]=urldecode(substr($postvalues,$pos+1));
+            }
+            //error_log('POSTformPHPINPUT：' . json_encode($_POST));
+        }
+    }
     $p = strpos($_SERVER['REQUEST_URI'],'?');
     if ($p>0) {
         $getstr = substr($_SERVER['REQUEST_URI'], $p+1);
@@ -46,11 +64,11 @@ function getConfig($str, $disktag = '')
         if ($disktag=='') $disktag = $_SERVER['disktag'];
         $env = json_decode(getenv($disktag), true);
         if (isset($env[$str])) {
-            if (in_array($str, $Base64Env)) return equal_replace($env[$str],1);
+            if (in_array($str, $Base64Env)) return base64y_decode($env[$str]);
             else return $env[$str];
 	}
     } else {
-	if (in_array($str, $Base64Env)) return equal_replace(getenv($str),1);
+	if (in_array($str, $Base64Env)) return base64y_decode(getenv($str));
         else return getenv($str);
     }
     return '';
@@ -68,7 +86,7 @@ function setConfig($arr, $disktag = '')
     $oparetdisk = 0;
     foreach ($arr as $k => $v) {
         if (in_array($k, $InnerEnv)) {
-            if (in_array($k, $Base64Env)) $diskconfig[$k] = equal_replace($v);
+            if (in_array($k, $Base64Env)) $diskconfig[$k] = base64y_encode($v);
             else $diskconfig[$k] = $v;
             $indisk = 1;
         } elseif ($k=='disktag_add') {
@@ -78,8 +96,10 @@ function setConfig($arr, $disktag = '')
             $disktags = array_diff($disktags, [ $v ]);
             $tmp[$v] = '';
             $oparetdisk = 1;
+        } elseif ($k=='disktag_rename' || $k=='disktag_newname') {
+            if ($arr['disktag_rename']!=$arr['disktag_newname']) $operatedisk = 1;
         } else {
-            if (in_array($k, $Base64Env)) $tmp[$k] = equal_replace($v);
+            if (in_array($k, $Base64Env)) $tmp[$k] = base64y_encode($v);
             else $tmp[$k] = $v;
         }
     }
@@ -89,10 +109,16 @@ function setConfig($arr, $disktag = '')
         $tmp[$disktag] = json_encode($diskconfig);
     }
     if ($oparetdisk) {
-        $disktags = array_unique($disktags);
-        foreach ($disktags as $disktag) if ($disktag!='') $disktag_s .= $disktag . '|';
-        if ($disktag_s!='') $tmp['disktag'] = substr($disktag_s, 0, -1);
-        else $tmp['disktag'] = '';
+        if (isset($arr['disktag_newname']) && $arr['disktag_newname']!='') {
+            $tmp['disktag'] = str_replace($arr['disktag_rename'], $arr['disktag_newname'], getConfig('disktag'));
+            $tmp[$arr['disktag_newname']] = getConfig($arr['disktag_rename']);
+            $tmp[$arr['disktag_rename']] = null;
+        } else {
+            $disktags = array_unique($disktags);
+            foreach ($disktags as $disktag) if ($disktag!='') $disktag_s .= $disktag . '|';
+            if ($disktag_s!='') $tmp['disktag'] = substr($disktag_s, 0, -1);
+            else $tmp['disktag'] = null;
+        }
     }
     foreach ($tmp as $key => $val) if ($val=='') $tmp[$key]=null;
 //    echo '正式设置：'.json_encode($tmp,JSON_PRETTY_PRINT).'
@@ -106,7 +132,7 @@ function install()
     if ($_GET['install1']) {
         if ($_POST['admin']!='') {
             $tmp['admin'] = $_POST['admin'];
-            $tmp['language'] = $_POST['language'];
+            //$tmp['language'] = $_POST['language'];
             $tmp['timezone'] = $_COOKIE['timezone'];
             $APIKey = getConfig('APIKey');
             if ($APIKey=='') {
@@ -126,7 +152,14 @@ function install()
                 $html = api_error_msg($response);
                 $title = 'Error';
             } else {
-                return output('Jump<meta http-equiv="refresh" content="3;URL=' . path_format($_SERVER['base_path'] . '/') . '">', 302);
+                return output('Jump
+    <script>
+        var expd = new Date();
+        expd.setTime(expd.getTime()+(2*60*60*1000));
+        var expires = "expires="+expd.toGMTString();
+        document.cookie=\'language=; path=/; \'+expires;
+    </script>
+    <meta http-equiv="refresh" content="3;URL=' . path_format($_SERVER['base_path'] . '/') . '">', 302);
             }
             return message($html, $title, 201);
         }
@@ -156,7 +189,10 @@ language:<br>';
         document.cookie="timezone="+timezone+"; path=/; "+expires;
         function changelanguage(str)
         {
-            document.cookie=\'language=\'+str+\'; path=/\';
+            var expd = new Date();
+            expd.setTime(expd.getTime()+(2*60*60*1000));
+            var expires = "expires="+expd.toGMTString();
+            document.cookie=\'language=\'+str+\'; path=/; \'+expires;
             location.href = location.href;
         }
         function notnull(t)
@@ -250,8 +286,8 @@ function_name:' . $_SERVER['function_name'] . '<br>
 function OnekeyUpate($auth = 'qkqpttgf', $project = 'OneManager-php', $branch = 'master')
 {
     //'https://github.com/qkqpttgf/OneManager-php/tarball/master/';
-    $source = 'https://github.com/' . $auth . '/' . $project . '/tarball/' . $branch . '/';
-    return json_decode(updateHerokuapp(getConfig('function_name'), getConfig('APIKey'), $source)['body'], true);
+    $source = 'https://github.com/' . $auth . '/' . $project . '/tarball/' . urlencode($branch) . '/';
+    return updateHerokuapp(getConfig('function_name'), getConfig('APIKey'), $source);
 }
 
 function setConfigResponse($response)
